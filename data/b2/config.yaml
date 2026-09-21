@@ -1,0 +1,266 @@
+sim:
+  horizon: 3000
+  warmup: 300
+  slot_seconds: 0.1
+world:
+  n_cells: 7
+  isd: 500.0
+  n_ue: 30
+  speed_min: 1.0
+  speed_max: 15.0
+  leg_min: 50.0
+  leg_max: 300.0
+  area_half: 750.0
+radio:
+  tx_power_dbm: 46.0
+  pl_a: 128.1
+  pl_b: 37.6
+  min_distance: 10.0
+  shadow_sigma: 6.0
+  shadow_decorr: 50.0
+  shadow_cell_corr: 0.0
+  noise_dbm: -95.0
+  outage_rsrp_dbm: -110.0
+channels:
+  sigma_c1: 1.0
+  sigma_c2: 1.5
+  sigma_c3: 2.0
+  sigma_map: 2.0
+rule:
+  hysteresis: 3.0
+  ttt: 5
+  variant_hysteresis:
+  - 2.0
+  - 3.0
+  - 4.0
+  variant_ttt:
+  - 4
+  - 5
+  - 6
+checks:
+  z: 3.0
+  persistence_slots: 3
+  min_channels: 2
+  sigma_floor: 0.05
+  dither_low: 2.0
+  dither_high: 4.0
+  enabled:
+  - serving_reciprocity
+  - neighbour_reciprocity
+  - map
+  - rate
+dhr:
+  decay: 0.9
+  recover: 1.02
+  weight_floor: 0.25
+  weight_cap: 1.0
+attacker:
+  p: 0.2
+  delta: 10.0
+  rho: 0.0
+  mode: trap
+  ramp_slots: 1
+  trap_reference_delta: 15.0
+cost:
+  bytes_c1: 40.0
+  bytes_c2: 20.0
+  bytes_c3: 60.0
+  bytes_c4: 0.0
+  compute_executor: 1.0
+  compute_check: 1.0
+metrics:
+  pingpong_window: 20
+
+sweep:
+  tag: pilot_b2
+  blocks:
+  - arms:
+    - single
+    - model_dhr3
+    - obs_dhr
+    - obs_dhr_phys
+    - obs_dhr_phys_dither
+    - cheap_phys
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    p:
+    - 0.2
+    delta:
+    - 0.0
+    - 6.0
+    - 10.0
+    - 15.0
+    rho:
+    - 0.0
+    - 0.5
+    - 1.0
+    sigma_map:
+    - 2.0
+    - 4.0
+    - 6.0
+    mode:
+    - trap
+    checks:
+    - default
+    z:
+    - 3.0
+    ramp:
+    - 1
+    persist:
+    - 3
+  - arms:
+    - single
+    - model_dhr3
+    - obs_dhr
+    - obs_dhr_phys
+    - obs_dhr_phys_dither
+    - cheap_phys
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    p:
+    - 0.2
+    delta:
+    - 0.0
+    - 6.0
+    - 10.0
+    - 15.0
+    rho:
+    - 0.0
+    sigma_map:
+    - 2.0
+    - 4.0
+    - 6.0
+    mode:
+    - pingpong
+    checks:
+    - default
+    z:
+    - 3.0
+    ramp:
+    - 1
+    persist:
+    - 3
+  - arms:
+    - single
+    - obs_dhr
+    - obs_dhr_phys
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    p:
+    - 0.2
+    delta:
+    - 10.0
+    rho:
+    - 1.0
+    sigma_map:
+    - 2.0
+    - 4.0
+    mode:
+    - trap
+    checks:
+    - default
+    z:
+    - 3.0
+    ramp:
+    - 10
+    - 20
+    persist:
+    - 3
+  - arms:
+    - obs_dhr_phys
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    p:
+    - 0.2
+    delta:
+    - 0.0
+    - 10.0
+    rho:
+    - 0.0
+    - 1.0
+    sigma_map:
+    - 2.0
+    - 4.0
+    mode:
+    - trap
+    checks:
+    - serving
+    - neighbour
+    - map
+    - rate
+    z:
+    - 3.0
+    ramp:
+    - 1
+    persist:
+    - 3
+  - arms:
+    - obs_dhr_phys
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    p:
+    - 0.2
+    delta:
+    - 0.0
+    - 10.0
+    rho:
+    - 0.0
+    - 1.0
+    sigma_map:
+    - 2.0
+    - 4.0
+    mode:
+    - trap
+    checks:
+    - default
+    z:
+    - 3.0
+    ramp:
+    - 1
+    persist:
+    - 1

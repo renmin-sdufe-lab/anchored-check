@@ -1,0 +1,48 @@
+# Pilot b0 sweep (PROTOCOL.md, row b0) plus the two pre-declared diagnostic blocks.
+tag: pilot_b0
+jobs:
+  # 1. Pre-registered main grid: p x delta at rho = 0, trap mode.
+  - arms: all
+    seeds: 0-9
+    p: [0.05, 0.2, 0.5]
+    delta: [6, 10, 15]
+    rho: [0.0]
+    mode: [trap]
+  # 2. Adaptive attacker at the gate setting.
+  - arms: all
+    seeds: 0-9
+    p: [0.2]
+    delta: [10]
+    rho: [0.5, 1.0]
+    mode: [trap]
+  # 3. Both attacker modes at the gate setting.
+  - arms: all
+    seeds: 0-9
+    p: [0.2]
+    delta: [10]
+    rho: [0.0]
+    mode: [pingpong]
+  # 4. Diagnostic: the same arms with the geometry check ablated (never used for a gate).
+  - arms: [obs_dhr_phys, obs_dhr_phys_dyn]
+    seeds: 0-9
+    p: [0.05, 0.2, 0.5]
+    delta: [10]
+    rho: [0.0, 0.5, 1.0]
+    mode: [trap]
+    checks: [recip_temporal]
+  - arms: [obs_dhr_phys, obs_dhr_phys_dyn]
+    seeds: 0-9
+    p: [0.2]
+    delta: [10]
+    rho: [0.0]
+    mode: [pingpong]
+    checks: [recip_temporal]
+  # 5. Diagnostic: sensitivity of the reciprocity threshold (never used for a gate).
+  - arms: [obs_dhr_phys]
+    seeds: 0-9
+    p: [0.2]
+    delta: [10]
+    rho: [0.0, 1.0]
+    mode: [trap]
+    checks: [recip]
+    reciprocity_db: [2, 3, 4, 5, 6, 8]

@@ -1,0 +1,14 @@
+# Ping-pong decomposition (PROTOCOL.md, row diag-pingpong): the per-check
+# decomposition of arm 4 in the ping-pong attacker mode at both reaches, which
+# the b2 sweep did not run (it decomposed the trap mode only, and ran ping-pong
+# at rho = 0 with the default set).  The default rows at rho = 0 reproduce the
+# b2 run bit for bit.
+tag: diag_pingpong
+jobs:
+  - arms: [obs_dhr_phys]
+    seeds: 0-9
+    delta: [0, 10]
+    rho: [0.0, 1.0]
+    sigma_map: [2.0]
+    mode: [pingpong]
+    checks: [default, serving, neighbour, map, rate]

@@ -1,0 +1,28 @@
+# Map-veto diagnostic (PROTOCOL.md, row diag-veto): arm 5c re-measured after it
+# lost the one check whose reference travels over Xn (DESIGN 4.4).  Seeds 0-9
+# with the b2 common random numbers; p is fixed at 0.2 (DESIGN 5).
+# Every block carries the delta = 0 null control.
+tag: diag_veto
+jobs:
+  # 1. Main grid: delta x rho x sigma_map, trap mode (360 runs).
+  - arms: [cheap_phys]
+    seeds: 0-9
+    delta: [0, 6, 10, 15]
+    rho: [0.0, 0.5, 1.0]
+    sigma_map: [2.0, 4.0, 6.0]
+    mode: [trap]
+  # 2. Ping-pong block at rho = 0 over every sigma_map (120 runs).
+  - arms: [cheap_phys]
+    seeds: 0-9
+    delta: [0, 6, 10, 15]
+    rho: [0.0]
+    sigma_map: [2.0, 4.0, 6.0]
+    mode: [pingpong]
+  # 3. Sticky ramp at delta = 10, rho = 1 (40 runs).
+  - arms: [cheap_phys]
+    seeds: 0-9
+    delta: [10]
+    rho: [1.0]
+    sigma_map: [2.0, 4.0]
+    mode: [trap]
+    ramp: [10, 20]

@@ -1,0 +1,43 @@
+# Revision B2' sweep (DESIGN 7).  p is fixed at 0.2: the transport-path
+# mechanism is per UE, so p is not a free parameter (DESIGN 5).
+# Every block carries the delta = 0 null control.
+tag: pilot_b2
+jobs:
+  # 1. Main grid: six arms x sigma_map x delta x rho, trap mode (2 160 runs).
+  - arms: all
+    seeds: 0-9
+    delta: [0, 6, 10, 15]
+    rho: [0.0, 0.5, 1.0]
+    sigma_map: [2.0, 4.0, 6.0]
+    mode: [trap]
+  # 2. Ping-pong mode at rho = 0 for every arm and sigma_map (720 runs).
+  - arms: all
+    seeds: 0-9
+    delta: [0, 6, 10, 15]
+    rho: [0.0]
+    sigma_map: [2.0, 4.0, 6.0]
+    mode: [pingpong]
+  # 3. Sticky ramp at delta = 10, rho = 1 for arms 1, 3 and 4 (120 runs).
+  - arms: [single, obs_dhr, obs_dhr_phys]
+    seeds: 0-9
+    delta: [10]
+    rho: [1.0]
+    sigma_map: [2.0, 4.0]
+    mode: [trap]
+    ramp: [10, 20]
+  # 4. Check decomposition for arm 4 (diagnostic; never a gate result).
+  - arms: [obs_dhr_phys]
+    seeds: 0-9
+    delta: [0, 10]
+    rho: [0.0, 1.0]
+    sigma_map: [2.0, 4.0]
+    mode: [trap]
+    checks: [serving, neighbour, map, rate]
+  # 5. No-persistence variant of arm 4 (DESIGN 4; reported, not gated).
+  - arms: [obs_dhr_phys]
+    seeds: 0-9
+    delta: [0, 10]
+    rho: [0.0, 1.0]
+    sigma_map: [2.0, 4.0]
+    mode: [trap]
+    persist: [1]

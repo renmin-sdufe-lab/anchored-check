@@ -1,0 +1,76 @@
+# WES pilot base configuration.  Every numeric constant of DESIGN.md sections 1-6 lives
+# here; nothing downstream
+# hard-codes a physical or policy parameter.
+
+sim:
+  horizon: 3000          # DESIGN 1: T = 3000 slots (5 min at 100 ms)
+  warmup: 300            # DESIGN 1: metrics collected for t >= 300
+  slot_seconds: 0.1      # DESIGN 1: slot = 100 ms
+
+world:
+  n_cells: 7             # DESIGN 1: 7-cell hexagonal cluster
+  isd: 500.0             # inter-site distance (m)
+  n_ue: 30               # DESIGN 1
+  speed_min: 1.0         # DESIGN 1: 1-15 m/s
+  speed_max: 15.0
+  leg_min: 50.0          # choice C1-2: random-direction leg length (m)
+  leg_max: 300.0
+  area_half: 750.0       # choice C1-1: half-side of the toroidal square (m)
+
+radio:
+  tx_power_dbm: 46.0     # choice C1-3: macro cell, equal power in every cell
+  pl_a: 128.1            # DESIGN 1: PL(d) = 128.1 + 37.6 log10(d_km)
+  pl_b: 37.6
+  min_distance: 10.0     # guard so log10(d) stays finite
+  shadow_sigma: 6.0      # DESIGN 1: log-normal shadowing sigma (dB)
+  shadow_decorr: 50.0    # DESIGN 1: exponential decorrelation distance (m)
+  shadow_cell_corr: 0.0  # inter-cell shadowing correlation;
+                         # 0.0 keeps DESIGN 1's stated independence across cells
+  noise_dbm: -95.0       # choice C1-4: 10 MHz thermal noise plus 9 dB NF
+  outage_rsrp_dbm: -110.0  # DESIGN 6.2: serving RSRP below this is an outage
+
+channels:                # DESIGN 2: C1 all cells, C2 the serving link only,
+  sigma_c1: 1.0          # C3 each neighbour's own link, N = {C2 serving, C3
+  sigma_c2: 1.5          # neighbours}, C4 the operator radio map.
+  sigma_c3: 2.0
+  sigma_map: 2.0         # DESIGN 2: map error std (dB), swept over {2, 4, 6}
+
+rule:
+  hysteresis: 3.0        # DESIGN 3: A3 offset (dB)
+  ttt: 5                 # DESIGN 3: time-to-trigger (slots)
+  variant_hysteresis: [2.0, 3.0, 4.0]   # DESIGN 3.3: arm 2p's variants
+  variant_ttt: [4, 5, 6]
+
+checks:                  # DESIGN 4: every threshold is z * sigma_diff with
+  z: 3.0                 # sigma_diff calibrated on the clean warm-up.
+  persistence_slots: 3   # DESIGN 4: uniform 3-consecutive-violation rule
+  min_channels: 2        # DESIGN 3: below this the DESIGN 3.4 trusted-channel fallback runs
+  sigma_floor: 0.05      # numerical floor for a calibrated standard deviation
+  dither_low: 2.0        # DESIGN 3.3 arm 4d: z ~ U[dither_low, dither_high]
+  dither_high: 4.0
+  enabled: [serving_reciprocity, neighbour_reciprocity, map, rate]
+
+dhr:
+  decay: 0.9             # choice C3-3: multiplicative down-weighting on disagreement
+  recover: 1.02
+  weight_floor: 0.25
+  weight_cap: 1.0
+
+attacker:
+  p: 0.2                 # DESIGN 5: transport-path adversary, p fixed at 0.2
+  delta: 10.0            # DESIGN 5: falsification magnitude (dB); 0 = null control
+  rho: 0.0               # DESIGN 2: reach on N's neighbour columns
+  mode: trap             # trap | pingpong (DESIGN 5)
+  ramp_slots: 1          # DESIGN 5: 1 = step; >= 10 = the slow-ramp condition
+  trap_reference_delta: 15.0  # DESIGN 5.2: the trap set is Delta-independent
+
+cost:
+  bytes_c1: 40.0         # DESIGN 3: one UE measurement report, all cells
+  bytes_c2: 20.0         # DESIGN 3: internal to the serving gNB, one link
+  bytes_c3: 60.0         # DESIGN 6.4: billed per neighbour report actually used
+  bytes_c4: 0.0          # DESIGN 2: the radio map costs no signalling
+  compute_executor: 1.0  # DESIGN 3: 1 unit per executor run
+  compute_check: 1.0     # DESIGN 3: 1 unit per adjudication check
+
+metrics:
+  pingpong_window: 20    # choice C4-2: return within 2 s counts as a ping-pong

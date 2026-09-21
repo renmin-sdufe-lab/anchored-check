@@ -1,0 +1,41 @@
+# Confirmatory sweep for Revision B1 (PROTOCOL.md, row b1).
+# Every block carries the delta = 0 null control.
+tag: pilot_b1
+jobs:
+  # 1. Main grid: p x delta x rho, trap mode, delta = 0 null included.
+  - arms: all
+    seeds: 0-9
+    p: [0.05, 0.2, 0.5]
+    delta: [0, 6, 10, 15]
+    rho: [0.0, 0.5, 1.0]
+    mode: [trap]
+  # 2. Ping-pong mode at the gate p, same delta and rho axes.
+  - arms: all
+    seeds: 0-9
+    p: [0.2]
+    delta: [0, 6, 10, 15]
+    rho: [0.0, 0.5, 1.0]
+    mode: [pingpong]
+  # 3. Slow-ramp condition: delta spread over 10 and 20 slots (reported, not gated).
+  - arms: all
+    seeds: 0-9
+    p: [0.2]
+    delta: [0, 10]
+    rho: [0.0, 1.0]
+    mode: [trap]
+    ramp: [10, 20]
+  # 4. Knowing adaptive attacker (reported, not gated).
+  - arms: all
+    seeds: 0-9
+    p: [0.2]
+    delta: [0, 10]
+    rho: [0.0, 0.5, 1.0]
+    mode: [trap_knowing]
+  # 5. Check decomposition (diagnostic, never a gate result).
+  - arms: [obs_dhr_phys]
+    seeds: 0-9
+    p: [0.2]
+    delta: [0, 10]
+    rho: [0.0, 1.0]
+    mode: [trap]
+    checks: [recip, temporal, self, no_self]

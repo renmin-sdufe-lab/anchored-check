@@ -1,0 +1,45 @@
+[project]
+name = "anchored-check"
+version = "0.1.0"
+description = "Wireless Endogenous Security for 6G Control Agents: Observation Diversity and What Anchors the Check"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "omegaconf>=2.3",
+    "pandas>=2.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# ``paper_figs`` modules import one another as siblings, not as a package.
+src = [".", "paper_figs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ARG", "T20", "RET", "C4"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001", "ARG002", "ARG005", "SLF001"]
+# Executors, adjudicators and attackers implement common interfaces; some
+# implementations legitimately ignore an argument the interface must offer.
+"wes/attacker.py" = ["ARG002"]
+"wes/executors.py" = ["ARG002"]
+"wes/adjudicate.py" = ["ARG002"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+# Uncomment to install from a mirror when the default index is unreachable.
+# [[tool.uv.index]]
+# name = "mirror"
+# url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+# default = true

@@ -1,0 +1,11 @@
+# Parameter-diversity diagnostic (PROTOCOL.md, row diag): the parameter-diversity
+# arm measured on the B2' apparatus.  The single rows reproduce the b2 run bit
+# for bit.
+tag: diag_param
+jobs:
+  - arms: [single, model_dhr_param]
+    seeds: 0-9
+    delta: [0, 10]
+    rho: [0.0]
+    sigma_map: [2.0]
+    mode: [trap]
