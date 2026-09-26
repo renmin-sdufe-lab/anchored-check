@@ -1,4 +1,4 @@
-"""Read-only access to the frozen run tables behind Fig. 4, Fig. 5 and Table I.
+"""Read-only access to the frozen run tables behind Fig. 3, Fig. 4 and Table I.
 
 Every number the figures and the table show is derived here from ``runs.csv``.
 Nothing is typed in and nothing is read out of a report.

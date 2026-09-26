@@ -100,7 +100,7 @@ def _corrected_mean(runs: figdata.RunTable, arm: str, sigma_map: float, delta: f
 
 
 def _fig4_reference(item: Plotted, runs: figdata.RunTable) -> tuple[float, float]:
-    """Independently recompute one Fig. 4 point."""
+    """Independently recompute one Fig. 3 point."""
     if item.quantity in ("ratio", "bound"):
         boundary = figspecs.BOUNDARY_BY_KEY[item.series]
         if item.quantity == "bound":
@@ -144,7 +144,7 @@ def _fig4_reference(item: Plotted, runs: figdata.RunTable) -> tuple[float, float
 
 
 def _fig5_reference(item: Plotted, runs: figdata.RunTable) -> tuple[float, float]:
-    """Independently recompute one Fig. 5 marker."""
+    """Independently recompute one Fig. 4 marker."""
     panel = figspecs.PANEL_BY_KEY[item.point]
     arm = figspecs.SERIES_BY_KEY[item.series].arm
     attacked = item.quantity == "attacked"

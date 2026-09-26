@@ -1,12 +1,12 @@
-"""Build Fig. 4 (``fig:reach``), Fig. 5 (``fig:cost``) and Table I of the article.
+"""Build Fig. 3 (``fig:reach``), Fig. 4 (``fig:cost``) and Table I of the article.
 
-Fig. 4 plots attack-attributable success per targeted slot against attacker
+Fig. 3 plots attack-attributable success per targeted slot against attacker
 reach at Delta = 10 dB, one panel per radio-map error level (sigma_map = 2 and
 4 dB), with each arm's Delta = 0 null drawn as a thin dotted rule in its own
 colour, and a third panel with the boundary of the anchored check: the
 null-corrected ratio of the checked arm to the vote-only arm at full reach over
 the falsification magnitude, one curve per map error level, with each level's
-calibrated map-check threshold marked on the axis.  Fig. 5 puts the harm of the
+calibrated map-check threshold marked on the axis.  Fig. 4 puts the harm of the
 defence in one column at sigma_map = 2 dB: wrong handovers per handover clean
 and under attack, and missed handovers per oracle handover with no attacker.
 Table I is written as a LaTeX fragment whose data-derived cells come from the
@@ -46,14 +46,14 @@ logger = logging.getLogger("wes.figs")
 
 OUT_DIR: Final[Path] = Path(__file__).resolve().parent
 
-#: Fig. 4 geometry.  Double column: two reach panels and the boundary panel.
+#: Fig. 3 geometry.  Double column: two reach panels and the boundary panel.
 FIG4_SIZE: Final[tuple[float, float]] = (figstyle.COL_DOUBLE, 2.75)
-#: Fig. 5 geometry.  Single column, two harm panels side by side.
+#: Fig. 4 geometry.  Single column, two harm panels side by side.
 FIG5_SIZE: Final[tuple[float, float]] = (figstyle.COL_SINGLE, 2.70)
 
-#: Horizontal offset of the clean and attacked markers of Fig. 5 panel (a).
+#: Horizontal offset of the clean and attacked markers of Fig. 4 panel (a).
 PAIR_OFFSET: Final[float] = 0.16
-#: Horizontal offset of the three map-error levels in Fig. 5 panel (b).
+#: Horizontal offset of the three map-error levels in Fig. 4 panel (b).
 SIGMA_OFFSET: Final[float] = 0.24
 
 #: In-figure word budgets fixed by the figure specification.
@@ -64,7 +64,7 @@ TABLE1_PATH: Final[Path] = OUT_DIR / "table1.tex"
 
 
 # --------------------------------------------------------------------------- #
-# Fig. 4
+# Fig. 3
 # --------------------------------------------------------------------------- #
 def _draw_reach_curve(
     ax: Axes, frame, series: figspecs.Series, sigma_map: float
@@ -135,7 +135,7 @@ def _draw_reach_curve(
 
 
 def _draw_boundary_panel(ax: Axes, frame) -> tuple[list[figcheck.Plotted], list[str]]:
-    """Draw Fig. 4(c): checked over vote-only, null-corrected, against Delta."""
+    """Draw Fig. 3(c): checked over vote-only, null-corrected, against Delta."""
     drawn: list[figcheck.Plotted] = []
     bounds: list[float] = []
     for series in figspecs.BOUNDARY_SERIES:
@@ -206,7 +206,7 @@ def _draw_boundary_panel(ax: Axes, frame) -> tuple[list[figcheck.Plotted], list[
 
 
 def build_fig4(runs: figdata.RunTable) -> tuple[Figure, list[figcheck.Plotted], list[str]]:
-    """Draw Fig. 4 and return it with the values drawn and the text placed."""
+    """Draw Fig. 3 and return it with the values drawn and the text placed."""
     fig = Figure(figsize=FIG4_SIZE)
     grid = fig.add_gridspec(
         1,
@@ -294,7 +294,7 @@ def build_fig4(runs: figdata.RunTable) -> tuple[Figure, list[figcheck.Plotted], 
 
 
 # --------------------------------------------------------------------------- #
-# Fig. 5
+# Fig. 4
 # --------------------------------------------------------------------------- #
 def _draw_level_panel(ax: Axes, frame, panel: figspecs.Panel) -> list[figcheck.Plotted]:
     """Draw one arm-indexed panel of levels, clean and optionally under attack."""
@@ -343,7 +343,7 @@ def _draw_level_panel(ax: Axes, frame, panel: figspecs.Panel) -> list[figcheck.P
 
 
 def build_fig5(runs: figdata.RunTable) -> tuple[Figure, list[figcheck.Plotted], list[str]]:
-    """Draw Fig. 5 and return it with the values drawn and the text placed."""
+    """Draw Fig. 4 and return it with the values drawn and the text placed."""
     fig = Figure(figsize=FIG5_SIZE)
     grid = fig.add_gridspec(
         1, 2, wspace=0.55, left=0.135, right=0.985, top=0.910, bottom=0.335
@@ -530,8 +530,8 @@ def main() -> int:
     figcheck.report_paired_contrasts(runs)
     spread = figcheck.check_null_is_invariant_in_reach(runs.run_dir)
     worst = figcheck.cross_check(runs, drawn4 + drawn5 + drawn_table)
-    count4 = figcheck.report_text_budget("Fig. 4", texts4, FIG4_WORD_BUDGET)
-    count5 = figcheck.report_text_budget("Fig. 5", texts5, FIG5_WORD_BUDGET)
+    count4 = figcheck.report_text_budget("Fig. 3", texts4, FIG4_WORD_BUDGET)
+    count5 = figcheck.report_text_budget("Fig. 4", texts5, FIG5_WORD_BUDGET)
     logger.info("source: %s + %s + %s", runs.run_dir.name, runs.diag_dir.name, runs.veto_dir.name)
     over_budget = count4 > FIG4_WORD_BUDGET or count5 > FIG5_WORD_BUDGET
     return 0 if worst < 1e-9 and spread == 0.0 and not over_budget else 1

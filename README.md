@@ -253,9 +253,9 @@ uv run python paper_figs/paper_numbers.py
 The first reads `data/b2/runs.csv`, the `model_dhr_param` rows of
 `data/diag_param/runs.csv` for the parameter-diversity row of the table and the
 `cheap_phys` rows of `data/diag_veto/runs.csv` for the map-veto arm, and writes
-`paper_figs/fig4.pdf`, `fig4.png`, `fig5.pdf`, `fig5.png` and `table1.tex`.
+`paper_figs/fig4.pdf`, `fig4.png`, `fig5.pdf`, `fig5.png` and `table1.tex`. The file names are those the manuscript source includes: `fig4` is Fig. 3 of the article and `fig5` is Fig. 4.
 
-**Fig. 4** is three panels across the double column. (a) and (b) plot
+**Fig. 3** is three panels across the double column. (a) and (b) plot
 attack-attributable success per targeted slot against attacker reach at
 `Δ = 10 dB`, cut at `σ_map = 2` and `4 dB`, with each arm's `Δ = 0` null drawn
 as a thin dotted rule in its own colour and a leader line tying the null label
@@ -265,7 +265,7 @@ against the falsification magnitude, one curve per map error level, with each
 level's calibrated map-check threshold marked on the axis, so where a curve
 climbs to 1 can be read against the bound that explains it.
 
-**Fig. 5** is two panels at single-column width. (a) is wrong handovers per
+**Fig. 4** is two panels at single-column width. (a) is wrong handovers per
 handover at `σ_map = 2 dB`, clean and under attack. (b) is missed handovers per
 oracle handover with no attacker, drawn at all three map error levels, left to
 right with growing marker size, so what refusing to act costs can be read
@@ -300,9 +300,9 @@ design cell it came from, recomputed from `data/b2/runs.csv`,
 |---|---|
 | Table I, rows for arms 1, 2′, 2p, 3, 4 and 4d (voters, adjudication, majority reachable, Xn bytes, executors and checks, false exclusion) | `data/b2/runs.csv`, plus `data/diag_param/runs.csv` for the parameter-diversity row; every number read from the run tables, not typed |
 | Table I, the map-veto row (arm 5c) | `data/diag_veto/runs.csv` |
-| Fig. 4(a)(b) (attack-attributable success against attacker reach, one panel per `σ_map`, with each arm's `Δ = 0` null) | `data/b2/runs.csv` at `Δ = 10`, `σ_map ∈ {2, 4}`, except the map-veto curve, which is `data/diag_veto/runs.csv` |
-| Fig. 4(c) (checked over vote-only, null-corrected, against `Δ`, with each map-check threshold marked) | `data/b2/runs.csv` at `ρ = 1`, `Δ ∈ {6, 10, 15}`, `σ_map ∈ {2, 4, 6}`; the thresholds from `thr_map` |
-| Fig. 5 (wrong handovers clean and under attack at `σ_map = 2`, missed handovers with no attacker at all three `σ_map`) | `data/b2/runs.csv`, except the map-veto markers, which are `data/diag_veto/runs.csv` |
+| Fig. 3(a)(b) (attack-attributable success against attacker reach, one panel per `σ_map`, with each arm's `Δ = 0` null) | `data/b2/runs.csv` at `Δ = 10`, `σ_map ∈ {2, 4}`, except the map-veto curve, which is `data/diag_veto/runs.csv` |
+| Fig. 3(c) (checked over vote-only, null-corrected, against `Δ`, with each map-check threshold marked) | `data/b2/runs.csv` at `ρ = 1`, `Δ ∈ {6, 10, 15}`, `σ_map ∈ {2, 4, 6}`; the thresholds from `thr_map` |
+| Fig. 4 (wrong handovers clean and under attack at `σ_map = 2`, missed handovers with no attacker at all three `σ_map`) | `data/b2/runs.csv`, except the map-veto markers, which are `data/diag_veto/runs.csv` |
 | The gate table and the reading it triggers | `data/b2/summary.md`, reproducible with `analyze.py` |
 | The parameter-diversity ratio on a shared input | `data/diag_param/runs.csv`, `attack_success_attr` at `p = 0.2`, `Δ = 10`, `ρ = 0`, less each arm's `Δ = 0` null |
 | Every quoted number for the map-veto arm: its attack-attributable success and null, its null-corrected ratio, its fallback, harm, cost and false exclusion, and its ramp rows | `data/diag_veto/runs.csv`; the arm's rows in `data/b2/runs.csv` are retired and are not quoted anywhere |

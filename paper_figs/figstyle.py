@@ -9,7 +9,7 @@ adjustments made for the magazine page:
    pattern, so two arms whose values coincide -- ``obs_dhr_phys`` and
    ``cheap_phys`` sit within 1.3e-5 of one another at rho = 0 -- stay legible
    under any colour-vision deficiency and in greyscale print.  Markers are drawn
-   hollow in Fig. 4 for the same reason.
+   hollow in Fig. 3 for the same reason.
 2. ``savefig.bbox`` is ``None`` rather than ``"tight"``, so a figure declared at
    3.45 in or 7.1 in is written at exactly that width.  Margins are set by hand
    in :mod:`make_figs` instead.
@@ -63,7 +63,7 @@ ARM_LINESTYLES: Final[dict[str, tuple[float, tuple[float, ...]] | str] ] = {
 }
 
 #: Greys, markers and dashes for the three radio-map error levels of the
-#: boundary panel of Fig. 4, which plots one ratio rather than several arms.
+#: boundary panel of Fig. 3, which plots one ratio rather than several arms.
 SIGMA_COLOURS: Final[dict[float, str]] = {2.0: "0.10", 4.0: "0.42", 6.0: "0.68"}
 SIGMA_MARKERS: Final[dict[float, str]] = {2.0: "o", 4.0: "s", 6.0: "^"}
 SIGMA_LINESTYLES: Final[dict[float, object]] = {

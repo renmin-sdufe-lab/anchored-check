@@ -1,4 +1,4 @@
-"""Declarative content of Fig. 4, Fig. 5 and Table I.
+"""Declarative content of Fig. 3, Fig. 4 and Table I.
 
 Which arm, which design cell, which metric and which colour each curve, marker
 and table cell is made of.  Keeping this apart from the drawing code lets the
@@ -27,7 +27,7 @@ ARM_ORDER: Final[tuple[str, ...]] = ("single", "obs_dhr", "obs_dhr_phys", "cheap
 
 @dataclass(frozen=True)
 class Series:
-    """One curve of Fig. 4(a)(b): an arm swept over attacker reach at one sigma_map."""
+    """One curve of Fig. 3(a)(b): an arm swept over attacker reach at one sigma_map."""
 
     key: str
     label: str
@@ -39,7 +39,7 @@ class Series:
 
 @dataclass(frozen=True)
 class BoundarySeries:
-    """One curve of Fig. 4(c): the checked-over-vote ratio at one sigma_map over Delta."""
+    """One curve of Fig. 3(c): the checked-over-vote ratio at one sigma_map over Delta."""
 
     key: str
     label: str
@@ -51,7 +51,7 @@ class BoundarySeries:
 
 @dataclass(frozen=True)
 class Panel:
-    """One panel of Fig. 5: a metric column, the cell it is read at, an axis label."""
+    """One panel of Fig. 4: a metric column, the cell it is read at, an axis label."""
 
     key: str
     column: str
@@ -168,7 +168,7 @@ VOTER_COUNTS: Final[dict[str, int]] = {
     "cheap_phys": 2,
 }
 
-#: Fig. 4 axis labels and in-figure notes.
+#: Fig. 3 axis labels and in-figure notes.
 FIG4_X_LABEL: Final[str] = r"Attacker reach $\rho$"
 FIG4_Y_LABEL: Final[str] = "Attack-attributable success per slot"
 FIG4_NULL_LABEL: Final[str] = r"$\Delta = 0$ null"
@@ -176,18 +176,18 @@ FIG4_SIGMA_TITLE: Final[str] = r"$\sigma_{\mathrm{map}}$"
 FIG4_BOUNDARY_X_LABEL: Final[str] = r"Falsification $\Delta$ (dB)"
 FIG4_BOUNDARY_Y_LABEL: Final[str] = "Checked over vote-only, null-corrected"
 
-#: Fig. 5 in-figure notes and the key of its two-marker panel.
+#: Fig. 4 in-figure notes and the key of its two-marker panel.
 FIG5_CLEAN_LABEL: Final[str] = "Clean"
 FIG5_ATTACKED_LABEL: Final[str] = "Attacked"
 FIG5_NOTE: Final[str] = ""
-#: Axis label under Fig. 5 panel (b), whose groups hold the three map-error levels.
+#: Axis label under Fig. 4 panel (b), whose groups hold the three map-error levels.
 FIG5_SIGMA_LABEL: Final[str] = r"$\sigma_{\mathrm{map}}$ (dB)"
 
 PANEL_LABELS: Final[tuple[str, ...]] = ("(a)", "(b)", "(c)", "(d)")
 
 
 def sigma_panel_label(index: int, sigma_map: float) -> str:
-    """Panel label of Fig. 4(a)(b): the letter and the radio-map error it is cut at."""
+    """Panel label of Fig. 3(a)(b): the letter and the radio-map error it is cut at."""
     return rf"{PANEL_LABELS[index]} $\sigma_{{\mathrm{{map}}}} = {sigma_map:.0f}$ dB"
 
 
