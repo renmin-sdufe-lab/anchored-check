@@ -34,6 +34,7 @@ from .checks import (
     Thresholds,
     arm_checks,
     build_thresholds,
+    placeholder_thresholds,
 )
 from .config import SimConfig
 from .decisions import KEEP
@@ -54,6 +55,7 @@ __all__ = [
     "arm_checks",
     "build_thresholds",
     "make_adjudicator",
+    "placeholder_thresholds",
     "register_adjudicator",
     "weighted_vote",
 ]
@@ -166,6 +168,10 @@ class Adjudicator:
         """Adjudicate one slot."""
         raise NotImplementedError
 
+    def install_thresholds(self, thresholds: Thresholds) -> None:
+        """Replace the threshold table, e.g. once the warm-up calibration exists."""
+        self.thresholds = thresholds
+
     def _empty(self) -> tuple[np.ndarray, np.ndarray]:
         """Zero exclusion and firing masks, for adjudicators without checks."""
         return (
@@ -252,6 +258,16 @@ class CheckingAdjudicator(Adjudicator):
             raise ValueError("a checking adjudicator needs a calibrated Thresholds table")
         self.checks = PhysicsExclusion(cfg, thresholds, n_ue, int(cells.shape[0]),
                                        dither=dither, arm=arm)
+
+    def install_thresholds(self, thresholds: Thresholds) -> None:
+        """Install a new threshold table in the running check engine (DESIGN 4.2).
+
+        Streaks and the previous-slot buffer are kept: the engine installs the
+        calibrated table at the end of the warm-up, when every streak is zero
+        because the placeholder table cannot be violated.
+        """
+        super().install_thresholds(thresholds)
+        self.checks.thresholds = thresholds
 
     def _survivors(self, view: SlotView) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Exclusion mask, per-check firings and the surviving voter mask."""

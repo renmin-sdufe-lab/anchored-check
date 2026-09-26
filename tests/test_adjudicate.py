@@ -16,7 +16,7 @@ from wes.adjudicate import (
     make_adjudicator,
     weighted_vote,
 )
-from wes.calibration import calibrate
+from wes.calibration import WarmupCollector
 from wes.channels import C1, C3, C4, N_CHANNELS, N, build_channels, network_view
 from wes.checks import (
     ARM_CHECKS,
@@ -43,12 +43,20 @@ def cfg():
 
 @pytest.fixture(scope="module")
 def world_channels(cfg):
-    """One seed of world, true RSRP, clean channels and their calibration."""
+    """One seed of world, true RSRP, clean channels and their online calibration.
+
+    The warm-up is replayed with every UE on its strongest cell, which stands in
+    for the serving trajectory an engine run would have.
+    """
     streams = make_streams(0)
     world = build_world(cfg, streams)
     rsrp = rsrp_true(cfg, world.positions, world.cells, world.shadow)
     channels = build_channels(cfg, rsrp, streams["noise"], world.map_error)
-    return world, rsrp, channels, calibrate(cfg, channels)
+    collector = WarmupCollector()
+    for t in range(cfg.sim.warmup):
+        serving = np.argmax(rsrp[t], axis=1)
+        collector.observe(network_view(channels.slot(t), serving), serving)
+    return world, rsrp, channels, collector.calibration(cfg)
 
 
 def _thresholds(cfg, world_channels):

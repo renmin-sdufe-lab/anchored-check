@@ -1,6 +1,6 @@
 # WES majority-reach run b2: analysis summary
 
-Runs: 200 runs; mean 1.33 s, max 1.87 s per run (DESIGN 8 budget 20 s); 266 s CPU in total
+Runs: 200 runs; mean 1.50 s, max 1.96 s per run (DESIGN 8 budget 20 s); 299 s CPU in total
 
 Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 'trap', 'check_set': 'default', 'z': 3.0, 'ramp_slots': 1, 'persistence_slots': 3}
 
@@ -120,7 +120,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 1 single (C1) | n/a | n/a | n/a |
 | 2' model DHR (3 families on C1) | n/a | n/a | n/a |
 | 3 obs DHR (C1, N, C4) | n/a | n/a | n/a |
-| 4 obs DHR + physics | 0.0006 ± 0.0001 | 0.0005 ± 0.0001 | 0.0389 ± 0.0083 |
+| 4 obs DHR + physics | 0.0006 ± 0.0001 | 0.0005 ± 0.0001 | 0.0388 ± 0.0086 |
 | 4d obs DHR + dithered physics | n/a | n/a | n/a |
 | 5c cheap physics (C1, C4) | n/a | n/a | n/a |
 | 2p param DHR (3 A3 variants on C1) | n/a | n/a | n/a |

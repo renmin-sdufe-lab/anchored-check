@@ -14,10 +14,11 @@ Four checks run on the three voting channels of DESIGN 3.3:
   per-slot RSRP change, which catches a step at any attacker reach and is evaded
   by a ramp below the bound: the pre-registered boundary of PROTOCOL.md.
 
-Every threshold is ``z`` times a standard deviation measured on the clean
-warm-up (:mod:`wes.calibration`), every check carries the same
-3-consecutive-violation persistence rule, and arm 4d draws ``z`` per UE
-and per slot from the serving gNB's own C2 noise instead of holding it at 3.
+Every threshold is ``z`` times a standard deviation measured online on the
+attack-free warm-up (:mod:`wes.calibration`); until that calibration is
+installed the checks run on :func:`placeholder_thresholds` and cannot fire.
+Every check carries the same 3-consecutive-violation persistence rule, and arm
+4d draws ``z`` per UE and per slot from the serving gNB's own C2 noise instead of holding it at 3.
 
 Which checks an arm runs is :data:`ARM_CHECKS` (DESIGN 4.4): every arm runs all
 four by default except the cheap arm 5c, which has no Xn and therefore may not
@@ -148,7 +149,7 @@ def build_thresholds(cfg: SimConfig, calibration: Calibration) -> Thresholds:
 
     Args:
         cfg: Configuration tree.
-        calibration: Warm-up calibration of this run.
+        calibration: Online warm-up calibration of this run.
 
     Returns:
         The threshold table; nothing here is fitted to attacked data and no
@@ -158,6 +159,23 @@ def build_thresholds(cfg: SimConfig, calibration: Calibration) -> Thresholds:
         z=float(cfg.checks.z),
         sigma={name: calibration.sigma(name) for name in CHECK_NAMES},
     )
+
+
+def placeholder_thresholds(cfg: SimConfig) -> Thresholds:
+    """Threshold table in force before the warm-up calibration exists (DESIGN 4.2).
+
+    Every ``sigma_diff`` is infinite, so no difference can exceed its bound, no
+    streak builds and nothing is excluded while the checks are idle during the
+    attack-free warm-up; a dithered ``z`` keeps the bound infinite.
+
+    Args:
+        cfg: Configuration tree.
+
+    Returns:
+        The idle threshold table the engine replaces at the end of the warm-up.
+    """
+    return Thresholds(z=float(cfg.checks.z),
+                      sigma=dict.fromkeys(CHECK_NAMES, math.inf))
 
 
 def analytic_floor(z: float, tests: int, persistence: int) -> float:

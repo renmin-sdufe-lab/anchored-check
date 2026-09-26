@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from wes.calibration import calibrate
+from wes.calibration import WarmupCollector, offline_channel_diagnostic
 from wes.channels import C1, C2, C3, C4, N, build_channels, network_view
 from wes.config import ConfigError, load_config
 from wes.radio import path_loss_db, rsrp_true
@@ -124,38 +124,93 @@ def test_c2_carries_only_the_serving_column(cfg):
     assert np.array_equal(readings[N][others], channels.values[C3][0][others])
 
 
-def test_calibration_recovers_every_sigma_from_the_warm_up(cfg):
-    """DESIGN 4.2: no threshold reads a generating constant."""
-    streams = make_streams(1)
+def _seed_channels(cfg, seed):
+    """True RSRP and clean channels of one seed."""
+    streams = make_streams(seed)
     world = build_world(cfg, streams)
     rsrp = rsrp_true(cfg, world.positions, world.cells, world.shadow)
-    channels = build_channels(cfg, rsrp, streams["noise"], world.map_error)
-    calibration = calibrate(cfg, channels)
-    assert calibration.sigma_c1 == pytest.approx(cfg.channels.sigma_c1, rel=0.05)
-    assert calibration.sigma_c2 == pytest.approx(cfg.channels.sigma_c2, rel=0.05)
-    assert calibration.sigma_c3 == pytest.approx(cfg.channels.sigma_c3, rel=0.05)
-    assert calibration.sigma_map == pytest.approx(cfg.channels.sigma_map, rel=0.05)
-    warmup = cfg.sim.warmup
+    return rsrp, build_channels(cfg, rsrp, streams["noise"], world.map_error)
+
+
+def _online(cfg, rsrp, channels):
+    """Warm-up collector fed the masked view with every UE on its strongest cell."""
+    collector = WarmupCollector()
+    for t in range(cfg.sim.warmup):
+        serving = np.argmax(rsrp[t], axis=1)
+        collector.observe(network_view(channels.slot(t), serving), serving)
+    return collector
+
+
+def test_offline_diagnostic_recovers_every_channel_sigma(cfg):
+    """The offline diagnostic recovers DESIGN 2's generating noise constants."""
+    _, channels = _seed_channels(cfg, 1)
+    diagnostic = offline_channel_diagnostic(cfg, channels)
+    assert diagnostic.sigma_c1 == pytest.approx(cfg.channels.sigma_c1, rel=0.05)
+    assert diagnostic.sigma_c2 == pytest.approx(cfg.channels.sigma_c2, rel=0.05)
+    assert diagnostic.sigma_c3 == pytest.approx(cfg.channels.sigma_c3, rel=0.05)
+    assert diagnostic.sigma_map == pytest.approx(cfg.channels.sigma_map, rel=0.05)
+    assert set(diagnostic.row()) == {"sigma_c1_hat", "sigma_map_hat"}
+
+
+def test_online_calibration_reads_only_what_the_serving_gnb_has(cfg):
+    """DESIGN 4.2: every check sigma comes from the masked warm-up view.
+
+    Serving reciprocity has one sample per UE-slot at the serving column,
+    neighbour reciprocity one per UE, neighbour cell and slot, and each sigma is
+    the standard deviation of exactly those samples.
+    """
+    rsrp, channels = _seed_channels(cfg, 1)
+    collector = _online(cfg, rsrp, channels)
+    calibration = collector.calibration(cfg)
+    warmup, n_ue, n_cells = cfg.sim.warmup, cfg.world.n_ue, cfg.world.n_cells
+    assert calibration.samples == {
+        "serving_reciprocity": warmup * n_ue,
+        "neighbour_reciprocity": warmup * n_ue * (n_cells - 1),
+        "map": warmup * n_ue * n_cells,
+        "rate": (warmup - 1) * n_ue * n_cells,
+    }
+    rows = np.arange(n_ue)
+    serving, neighbour = [], []
+    for t in range(warmup):
+        cell = np.argmax(rsrp[t], axis=1)
+        values = channels.values[:, t]
+        serving.append(values[C1][rows, cell] - values[C2][rows, cell])
+        others = np.ones((n_ue, n_cells), dtype=bool)
+        others[rows, cell] = False
+        neighbour.append((values[C1] - values[C3])[others])
+    c1 = channels.values[C1][:warmup]
     for check, expected in (
-        ("serving_reciprocity", channels.values[C1][:warmup] - channels.values[C2][:warmup]),
-        ("neighbour_reciprocity", channels.values[C1][:warmup] - channels.values[C3][:warmup]),
-        ("map", channels.values[C1][:warmup] - channels.values[C4][:warmup]),
-        ("rate", np.diff(channels.values[C1][:warmup], axis=0)),
+        ("serving_reciprocity", np.concatenate(serving)),
+        ("neighbour_reciprocity", np.concatenate(neighbour)),
+        ("map", c1 - channels.values[C4][:warmup]),
+        ("rate", np.diff(c1, axis=0)),
     ):
         assert calibration.sigma(check) == pytest.approx(float(np.std(expected)), rel=1e-9)
+    assert calibration.serving_reciprocity == pytest.approx(
+        float(np.hypot(cfg.channels.sigma_c1, cfg.channels.sigma_c2)), rel=0.1
+    )
     with pytest.raises(KeyError):
         calibration.sigma("geometry")
 
 
+def test_online_calibration_needs_two_warm_up_slots(cfg):
+    """A warm-up too short to form a rate difference cannot calibrate."""
+    rsrp, channels = _seed_channels(cfg, 1)
+    collector = WarmupCollector()
+    serving = np.argmax(rsrp[0], axis=1)
+    collector.observe(network_view(channels.slot(0), serving), serving)
+    with pytest.raises(ValueError, match="rate"):
+        collector.calibration(cfg)
+
+
 def test_calibration_tracks_a_wider_map(cfg):
     """A wider radio map widens the map threshold and nothing else materially."""
-    streams = make_streams(1)
     wide = load_config(("channels.sigma_map=6.0",))
-    world = build_world(wide, streams)
-    rsrp = rsrp_true(wide, world.positions, world.cells, world.shadow)
-    channels = build_channels(wide, rsrp, streams["noise"], world.map_error)
-    calibration = calibrate(wide, channels)
-    assert calibration.sigma_map == pytest.approx(6.0, rel=0.05)
+    rsrp, channels = _seed_channels(wide, 1)
+    assert offline_channel_diagnostic(wide, channels).sigma_map == pytest.approx(
+        6.0, rel=0.05
+    )
+    calibration = _online(wide, rsrp, channels).calibration(wide)
     assert calibration.map_consistency > 5.0
     assert calibration.serving_reciprocity < 3.0
 

@@ -6,11 +6,21 @@ adjudicator.  An arm is nothing but the policy objects handed to this same loop,
 so the world, the mobility, the report noise and the attacker draws are common
 random numbers across arms for a given seed.
 
-Each slot the attacker writes to C1 and, with probability ``rho``, to the
-neighbour reports behind the composite channel N; the engine then applies
-:func:`wes.channels.network_view`, which masks C2 to the serving link and
-assembles N, so no executor and no check can read a measurement its node could
-not make (DESIGN 2).
+The first ``cfg.sim.warmup`` slots are an attack-free warm-up: the attacker is
+silent (its ``poison`` is not called), the physical-consistency checks are idle
+on an infinite placeholder threshold table, and nothing is scored.  Each warm-up
+slot's readings, as the serving gNB has them (C2 on the serving link only, C3 on
+the neighbour links), feed :class:`wes.calibration.WarmupCollector`.  At the
+start of slot ``warmup`` every threshold is calibrated from those readings and
+installed in the running adjudicator, and scoring starts in that slot.
+
+From slot ``warmup`` on the attacker writes to C1 and, with probability
+``rho``, to the neighbour reports behind the composite channel N.  In every
+slot the engine applies :func:`wes.channels.network_view`, which masks C2 to the
+serving link and assembles N, so no executor and no check can read a
+measurement its node could not make (DESIGN 2).  The oracle, the executors, the
+adjudicator and the missed-handover tracker step in every slot, warm-up
+included.
 
 The oracle is the Revision B1 counterfactual: it never votes and is never
 billed, but its decision says whether a handover would have happened without the
@@ -33,9 +43,10 @@ from .adjudicate import (
     arm_checks,
     build_thresholds,
     make_adjudicator,
+    placeholder_thresholds,
 )
-from .attacker import make_attacker
-from .calibration import calibrate
+from .attacker import PoisonResult, make_attacker
+from .calibration import Calibration, WarmupCollector, offline_channel_diagnostic
 from .channels import C1, C2, C3, C4, N, build_channels, network_view
 from .config import SimConfig
 from .decisions import KEEP
@@ -93,8 +104,12 @@ class Engine:
         self.rsrp = rsrp_true(cfg, self.world.positions, self.world.cells, self.world.shadow)
         self.channels = build_channels(cfg, self.rsrp, self.streams["noise"],
                                        self.world.map_error)
-        self.calibration = calibrate(cfg, self.channels)
-        self.thresholds = build_thresholds(cfg, self.calibration)
+        #: Offline noise diagnostic reported in ``runs.csv``; no check uses it.
+        self.diagnostic = offline_channel_diagnostic(cfg, self.channels)
+        #: Online calibration, set at the end of the attack-free warm-up.
+        self.calibration: Calibration | None = None
+        self.collector = WarmupCollector()
+        self.thresholds = placeholder_thresholds(cfg)
         self.attacker = make_attacker(cfg, self.streams["attacker"])
         n_ue, n_cells = cfg.world.n_ue, cfg.world.n_cells
         self.specs = arm_specs(cfg, arm)
@@ -148,6 +163,14 @@ class Engine:
         outage = truth[rows, serving] < self.cfg.radio.outage_rsrp_dbm
         return deficit, outage, choice != serving
 
+    def _calibrate(self) -> None:
+        """Calibrate every threshold on the warm-up and install it (DESIGN 4.2)."""
+        self.calibration = self.collector.calibration(self.cfg)
+        self.thresholds = build_thresholds(self.cfg, self.calibration)
+        self.adjudicator.install_thresholds(self.thresholds)
+        logger.debug("installed thresholds %s after %d warm-up slots",
+                     self.thresholds.row(), self.collector.slots)
+
     def run(self) -> RunResult:
         """Execute the whole horizon and return the run's metric row."""
         start = time.perf_counter()
@@ -156,10 +179,19 @@ class Engine:
         window = cfg.metrics.pingpong_window
         hysteresis = cfg.rule.hysteresis
         scored_slots = 0
+        warmup = cfg.sim.warmup
         for t in range(cfg.sim.horizon):
             truth = self.rsrp[t]
-            poisoned = self.attacker.poison(t, self.channels.slot(t), serving, load, truth)
-            readings = network_view(poisoned.readings, serving)
+            if t == warmup:
+                self._calibrate()
+            poisoned: PoisonResult | None = None
+            if t < warmup:
+                readings = network_view(self.channels.slot(t), serving)
+                self.collector.observe(readings, serving)
+            else:
+                poisoned = self.attacker.poison(t, self.channels.slot(t), serving, load,
+                                                truth)
+                readings = network_view(poisoned.readings, serving)
             decisions = self.bank.step(readings, serving, load)
             oracle_decision = self.oracle.step(truth, serving, load)
             view = SlotView(
@@ -172,9 +204,9 @@ class Engine:
             )
             verdict = self.adjudicator.decide(view)
             decision = verdict.decision
-            scoring = t >= cfg.sim.warmup
+            scoring = poisoned is not None
             self.missed.observe(t, oracle_decision, scoring)
-            if scoring:
+            if poisoned is not None:
                 scored_slots += 1
                 self._charge_slot()
                 deficit, outage, wrong_cell = self._harm(truth, serving, oracle_decision)
@@ -213,11 +245,15 @@ class Engine:
                 serving = serving.copy()
                 serving[moving] = target
                 load = np.bincount(serving, minlength=cfg.world.n_cells).astype(float)
+        if self.calibration is None:
+            self._calibrate()
         return self._result(time.perf_counter() - start, scored_slots)
 
     def _result(self, runtime: float, scored_slots: int) -> RunResult:
         """Assemble the run row from the collector and the cost ledgers."""
         cfg = self.cfg
+        if self.calibration is None:
+            raise RuntimeError("the run ended before the warm-up calibration existed")
         rates = self.metrics.rates(self.missed)
         ue_seconds = cfg.world.n_ue * cfg.sim.metric_seconds
         executors = len(self.bank) * cfg.cost.compute_executor
@@ -242,5 +278,6 @@ class Engine:
             runtime_seconds=runtime,
             **self.thresholds.row(),
             **self.calibration.row(),
+            **self.diagnostic.row(),
             **rates,
         )

@@ -31,9 +31,10 @@ run.
 ### 1.1 Time and horizon
 
 Discrete slots, one slot = 100 ms. Horizon `T = 3000` slots (5 minutes).
-Metrics are collected for `t >= 300`; the first 300 slots are the warm-up. They
-are excluded from every reported quantity and are the window on which the checks
-of §4 are calibrated.
+Metrics are collected for `t >= 300`; the first 300 slots are the warm-up. The
+warm-up is attack-free: the attacker is silent and the checks of §4 are idle
+during it. It is excluded from every reported quantity and is the window on
+whose readings the checks are calibrated (§4.2).
 
 ### 1.2 Cells, UEs and mobility
 
@@ -238,23 +239,34 @@ an arm that does not, which §4.4 explains.
 ### 4.2 Calibration on the warm-up
 
 Every threshold is `z · σ̂_diff` with `z = checks.z = 3`, and every `σ̂_diff` is
-the standard deviation of the compared difference **measured on the clean
-warm-up window** of that run. No check reads a generating constant out of
-`conf/base.yaml`; a test asserts it. Four differences are measured directly,
-because they are exactly what the four checks compare:
+the standard deviation of the compared difference **measured online on the
+attack-free warm-up** of that run. For the first `sim.warmup = 300` slots the
+attacker is silent and the checks are idle: they run on a placeholder table
+whose every `σ` is infinite, so no violation, streak or exclusion can occur.
+The samples are taken from the readings the serving gNB actually has in those
+slots, the same masked view the checks read (§2): `C2` on the serving link only,
+and the `C3` reports of the neighbour links, which are `N`'s non-serving
+columns. At the end of the warm-up every threshold is calibrated from them and
+installed in the running checks, and scoring starts at slot `sim.warmup`. No
+check reads a generating constant out of `conf/base.yaml`; a test asserts it.
+Four differences are measured directly, because they are exactly what the four
+checks compare:
 
-| check | calibrated difference |
+| check | calibrated difference (warm-up samples) |
 |---|---|
-| serving reciprocity | `C1 − C2` |
-| neighbour reciprocity | `C1 − C3` |
-| map consistency | `C1 − C4` |
-| rate consistency | `C1(t) − C1(t−1)` |
+| serving reciprocity | `C1 − C2` at the serving cell, one per UE-slot |
+| neighbour reciprocity | `C1 − N` at every non-serving cell, i.e. against the `C3` reports |
+| map consistency | `C1 − C4` at every cell |
+| rate consistency | `C1(t) − C1(t−1)` at every cell, consecutive warm-up slots |
 
-The per-channel standard deviations are recovered for the report from the three
-pairwise variances (`σ_C1² = (V12 + V13 − V23) / 2` and so on, with
-`σ_map² = Var(C1 − C4) − σ_C1²`), and every calibrated quantity is written to
-`runs.csv`. The warm-up is assumed clean; the report says so. A numerical floor
-`checks.sigma_floor = 0.05 dB` keeps a calibrated standard deviation positive.
+The thresholds and these four standard deviations are written to `runs.csv`.
+Two further columns, `sigma_c1_hat` and `sigma_map_hat`, come from an offline
+diagnostic that no check uses: it recovers the per-channel standard deviations
+from the three pairwise variances of the whole clean warm-up array
+(`σ_C1² = (V12 + V13 − V23) / 2`, `σ_map² = Var(C1 − C4) − σ_C1²`), which needs
+`C2` and `C3` on the same link and is therefore not observable online. A
+numerical floor `checks.sigma_floor = 0.05 dB` keeps a calibrated standard
+deviation positive.
 
 ### 4.3 Persistence, dithering and the analytic floor
 

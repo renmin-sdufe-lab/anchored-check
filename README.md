@@ -65,8 +65,14 @@ families*, on the same single report, and it is run on its own design point
 ## The four checks
 
 Each compares `C1` against a reference and excludes after three consecutive
-violations of a `3σ̂` bound, where every `σ̂` is measured on that run's clean
-warm-up rather than read out of the configuration.
+violations of a `3σ̂` bound, where every `σ̂` is measured on that run's warm-up
+rather than read out of the configuration. The first `sim.warmup = 300` slots
+are attack-free: the attacker is silent and the checks are idle. At the end of
+the warm-up every threshold is calibrated from the readings the serving gNB had
+during it (`C2` on the serving link only, the `C3` reports on the neighbour
+links), and scoring starts at slot 300. The `sigma_c1_hat` and `sigma_map_hat`
+columns of `runs.csv` are an offline diagnostic over the full clean array that
+no check uses.
 
 | check | reference | anchored on something the attacker can reach? |
 |---|---|---|
@@ -337,7 +343,7 @@ uv run pytest -q
 uv run ruff check .
 ```
 
-101 tests. They cover the path-loss and shadowing model, the spatial
+107 tests. They cover the path-loss and shadowing model, the spatial
 correlation of the map error, the channel noise levels and the masking that
 keeps the serving gNB to its own link, the warm-up calibration and the rule that
 no threshold may read a generating constant, each check including the symmetric

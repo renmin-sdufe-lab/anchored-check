@@ -72,7 +72,7 @@ metrics:
   pingpong_window: 20
 
 sweep:
-  tag: diag_veto
+  tag: rerun_diag_veto
   blocks:
   - arms:
     - cheap_phys

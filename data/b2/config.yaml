@@ -72,7 +72,7 @@ metrics:
   pingpong_window: 20
 
 sweep:
-  tag: pilot_b2
+  tag: rerun_pilot_b2
   blocks:
   - arms:
     - single
@@ -81,6 +81,7 @@ sweep:
     - obs_dhr_phys
     - obs_dhr_phys_dither
     - cheap_phys
+    - model_dhr_param
     seeds:
     - 0
     - 1
@@ -124,6 +125,7 @@ sweep:
     - obs_dhr_phys
     - obs_dhr_phys_dither
     - cheap_phys
+    - model_dhr_param
     seeds:
     - 0
     - 1

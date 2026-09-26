@@ -1,6 +1,6 @@
 # WES majority-reach run b2: analysis summary
 
-Runs: 520 runs; mean 0.90 s, max 1.13 s per run (DESIGN 8 budget 20 s); 469 s CPU in total
+Runs: 520 runs; mean 1.48 s, max 1.95 s per run (DESIGN 8 budget 20 s); 768 s CPU in total
 
 Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 'trap', 'check_set': 'default', 'z': 3.0, 'ramp_slots': 1, 'persistence_slots': 3}
 
@@ -26,7 +26,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 3 obs DHR (C1, N, C4) | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4 obs DHR + physics | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| 5c cheap physics (C1, C4) | 0.0002 ± 0.0001 | 0.0016 ± 0.0019 | 0.0121 ± 0.0031 | 0.0009 ± 0.0002 | 0.1130 ± 0.0113 | 0.0000 ± 0.0000 | 1.3515 ± 0.0415 |
+| 5c cheap physics (C1, C4) | 0.0002 ± 0.0001 | 0.0016 ± 0.0019 | 0.0120 ± 0.0031 | 0.0009 ± 0.0002 | 0.1130 ± 0.0113 | 0.0000 ± 0.0000 | 1.3515 ± 0.0415 |
 | 2p param DHR (3 A3 variants on C1) | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 
 
@@ -39,7 +39,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 3 obs DHR (C1, N, C4) | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4 obs DHR + physics | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | n/a | n/a | n/a | n/a | n/a | n/a |
-| 5c cheap physics (C1, C4) | 0.0013 ± 0.0002 | 0.0044 ± 0.0006 | 0.0028 ± 0.0003 | 0.3081 ± 0.0282 | 0.0009 ± 0.0002 | 1.3493 ± 0.0410 |
+| 5c cheap physics (C1, C4) | 0.0013 ± 0.0002 | 0.0044 ± 0.0006 | 0.0028 ± 0.0003 | 0.3065 ± 0.0284 | 0.0009 ± 0.0002 | 1.3493 ± 0.0409 |
 | 2p param DHR (3 A3 variants on C1) | n/a | n/a | n/a | n/a | n/a | n/a |
 
 
@@ -80,7 +80,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 4d obs DHR + dithered physics | 2 | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | 4 | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | 6 | n/a | n/a | n/a | n/a |
-| 5c cheap physics (C1, C4) | 2 | 0.0002 ± 0.0001 | 0.0014 ± 0.0001 | 0.0013 ± 0.0002 | 0.0013 ± 0.0002 |
+| 5c cheap physics (C1, C4) | 2 | 0.0002 ± 0.0001 | 0.0013 ± 0.0002 | 0.0013 ± 0.0002 | 0.0013 ± 0.0002 |
 | 5c cheap physics (C1, C4) | 4 | 0.0002 ± 0.0001 | 0.0017 ± 0.0003 | 0.0020 ± 0.0003 | 0.0019 ± 0.0003 |
 | 5c cheap physics (C1, C4) | 6 | 0.0002 ± 0.0001 | 0.0017 ± 0.0002 | 0.0021 ± 0.0003 | 0.0022 ± 0.0003 |
 | 2p param DHR (3 A3 variants on C1) | 2 | n/a | n/a | n/a | n/a |
@@ -130,7 +130,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 4d obs DHR + dithered physics | 0 (null) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | 10 | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | 5c cheap physics (C1, C4) | 0 (null) | 0.1130 ± 0.0113 | 0.0000 ± 0.0000 | 0.0176 ± 0.0020 | 0.0225 ± 0.0064 | 0.0253 ± 0.0088 | 0.0010 ± 0.0001 | 0.2285 ± 0.0322 | 0.0032 ± 0.0002 | 0.0008 ± 0.0002 | 1.3515 ± 0.0415 |
-| 5c cheap physics (C1, C4) | 10 | 0.1170 ± 0.0128 | 0.0000 ± 0.0000 | 0.0181 ± 0.0023 | 0.0764 ± 0.0117 | 0.0314 ± 0.0085 | 0.0010 ± 0.0002 | 0.2445 ± 0.0364 | 0.0034 ± 0.0002 | 0.1091 ± 0.0058 | 1.3493 ± 0.0410 |
+| 5c cheap physics (C1, C4) | 10 | 0.1169 ± 0.0128 | 0.0000 ± 0.0000 | 0.0181 ± 0.0023 | 0.0758 ± 0.0118 | 0.0314 ± 0.0085 | 0.0010 ± 0.0002 | 0.2442 ± 0.0367 | 0.0034 ± 0.0002 | 0.1090 ± 0.0057 | 1.3493 ± 0.0409 |
 | 2p param DHR (3 A3 variants on C1) | 0 (null) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | 2p param DHR (3 A3 variants on C1) | 10 | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 
@@ -162,7 +162,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 3 obs DHR (C1, N, C4) | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4 obs DHR + physics | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | n/a | n/a | n/a | n/a | n/a | n/a |
-| 5c cheap physics (C1, C4) | no | 0.3081 ± 0.0282 | 0.3858 ± 0.0330 | 0.9118 ± 0.0137 | 0.0009 ± 0.0002 | 1.8909 ± 0.0058 |
+| 5c cheap physics (C1, C4) | no | 0.3065 ± 0.0284 | 0.3847 ± 0.0331 | 0.9128 ± 0.0120 | 0.0009 ± 0.0002 | 1.8910 ± 0.0057 |
 | 2p param DHR (3 A3 variants on C1) | n/a | n/a | n/a | n/a | n/a | n/a |
 
 
@@ -176,7 +176,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 | 3 obs DHR (C1, N, C4) | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4 obs DHR + physics | n/a | n/a | n/a | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | n/a | n/a | n/a | n/a | n/a | n/a |
-| 5c cheap physics (C1, C4) | 0.0013 ± 0.0002 | 0.0002 ± 0.0001 | 0.0764 ± 0.0117 | 0.0018 ± 0.0002 | 0.0003 ± 0.0001 | 0.0715 ± 0.0109 |
+| 5c cheap physics (C1, C4) | 0.0013 ± 0.0002 | 0.0002 ± 0.0001 | 0.0758 ± 0.0118 | 0.0018 ± 0.0002 | 0.0003 ± 0.0001 | 0.0715 ± 0.0108 |
 | 2p param DHR (3 A3 variants on C1) | n/a | n/a | n/a | n/a | n/a | n/a |
 
 

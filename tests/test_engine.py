@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from run import CHECK_SETS, Job, build_jobs, normalise_block, parse_int_list, resolve_arms
-from wes.channels import C1, C2, C3, C4, N
+from wes.channels import C1, C2, C3, C4, N, network_view
 from wes.config import load_config
 from wes.decisions import ARM_ORDER, KEEP
 from wes.engine import Engine, measured_channels
@@ -20,7 +20,10 @@ from wes.world import make_streams
 
 #: Short runs of every arm captured before arm 5c was given its own check set
 #: and before its peer reference moved off N (DESIGN 4.4); the bit-identity
-#: tests below replay both.
+#: tests below replay both.  Both fixtures were regenerated on 2026-09-26 after
+#: the attack-free warm-up and online calibration correction, with arm 5c's
+#: entry produced by the pre-edit wiring (four checks and peer N, respectively
+#: three checks and peer N) on the corrected engine.
 TEST_DATA = Path(__file__).resolve().parent / "data"
 BASELINE_PRE_CHECK_SET = TEST_DATA / "arm_baseline_pre_check_set.json"
 BASELINE_PRE_PEER = TEST_DATA / "arm_baseline_pre_peer.json"
@@ -33,15 +36,16 @@ PEER_MOVED: frozenset[str] = frozenset(
 )
 
 #: One run of the observation model, pinned bit-exactly for future revisions.
-#: Arm 4 at the gate setting, seed 3.
+#: Arm 4 at the gate setting, seed 3.  Re-pinned on 2026-09-26 after the
+#: attack-free warm-up and online calibration correction.
 PINNED_RUN: dict[str, float] = {
-    "attack_success_attr": 0.004876543209876543,
-    "attack_success_opp": 0.017119379137183293,
-    "actionable_share": 0.2704320987654321,
+    "attack_success_attr": 0.0049382716049382715,
+    "attack_success_opp": 0.017455213596692696,
+    "actionable_share": 0.2687654320987654,
     "false_exclusion_rate": 0.0005555555555555556,
-    "detect_rate_actionable": 0.9536635471353572,
-    "rsrp_deficit": 0.0875039897596209,
-    "throughput": 1.354133024200864,
+    "detect_rate_actionable": 0.9529168580615526,
+    "rsrp_deficit": 0.08731889049625037,
+    "throughput": 1.354195322241807,
     "thr_map": 6.914122030312857,
     "thr_rate": 5.340468799925379,
 }
@@ -64,7 +68,11 @@ def engines(cfg):
 
 
 def test_common_random_numbers_across_arms(cfg, engines):
-    """World, channels and attacker draws are identical across arms for one seed."""
+    """World, channels and attacker draws are identical across arms for one seed.
+
+    The online calibration is not: it reads C2 at each arm's own serving cell
+    during the warm-up, so only its sample counts are common across arms.
+    """
     reference = engines[ARM_ORDER[0]][0]
     for arm in ARM_ORDER[1:]:
         other = engines[arm][0]
@@ -76,7 +84,8 @@ def test_common_random_numbers_across_arms(cfg, engines):
             reference.channels.values, other.channels.values, equal_nan=True
         )
         assert np.array_equal(reference.attacker.targets, other.attacker.targets)
-        assert reference.calibration == other.calibration
+        assert reference.diagnostic == other.diagnostic
+        assert reference.calibration.samples == other.calibration.samples
         for t in (0, 500, 2999):
             assert np.array_equal(
                 reference.attacker.peer_compromised(t), other.attacker.peer_compromised(t)
@@ -105,7 +114,9 @@ def test_only_the_veto_arm_changed_when_it_lost_a_check():
     """DESIGN 4.4: every arm but 5c is bit-identical across the check-set change.
 
     ``tests/data/arm_baseline_pre_check_set.json`` is a short run of every arm
-    captured before the edit.  Six arms must replay it exactly; arm 5c must
+    captured before the edit.  The fixture was regenerated on 2026-09-26 after
+    the attack-free warm-up and online calibration correction, with arm 5c on
+    its pre-edit four-check wiring.  Six arms must replay it exactly; arm 5c must
     differ in the one way the design fixed in advance, three checks instead of
     four and five compute units instead of six, and in nothing that is not
     downstream of the exclusions it no longer makes.
@@ -139,7 +150,9 @@ def test_only_the_veto_arm_changed_when_it_stopped_reading_the_peer():
     """DESIGN 4.4: the peer-reference and skip-disabled changes touch arm 5c alone.
 
     ``tests/data/arm_baseline_pre_peer.json`` is a short run of every arm
-    captured before the edit.  The six other arms must replay it exactly, which
+    captured before the edit.  The fixture was regenerated on 2026-09-26 after
+    the attack-free warm-up and online calibration correction, with arm 5c on
+    its pre-edit peer reference N.  The six other arms must replay it exactly, which
     also pins that skipping a disabled check's difference changes no verdict,
     since the decomposition arms never read a streak they did not enable.  Arm
     5c may move only in the columns an exclusion can move, and only a little.
@@ -160,6 +173,93 @@ def test_only_the_veto_arm_changed_when_it_stopped_reading_the_peer():
         assert after["detect_rate_actionable"] == pytest.approx(
             before["detect_rate_actionable"], abs=0.005
         )
+
+
+def _short_config():
+    """Short run at the gate setting, for the warm-up tests."""
+    return load_config(("sim.horizon=500", "attacker.delta=10.0", "attacker.rho=1.0",
+                        "channels.sigma_map=2.0"))
+
+
+def test_the_attacker_is_silent_during_the_warm_up(monkeypatch):
+    """DESIGN 1: no slot before ``warmup`` is poisoned or reaches the attacker."""
+    cfg = _short_config()
+    engine = Engine(cfg, "obs_dhr_phys", 0)
+    calls: list[int] = []
+    poison = engine.attacker.poison
+
+    def spy(t, readings, serving, load, rsrp):
+        calls.append(t)
+        return poison(t, readings, serving, load, rsrp)
+
+    monkeypatch.setattr(engine.attacker, "poison", spy)
+    seen: list[tuple[int, np.ndarray, np.ndarray]] = []
+    observe = engine.collector.observe
+
+    def record(readings, serving):
+        seen.append((engine.collector.slots, readings.copy(), serving.copy()))
+        observe(readings, serving)
+
+    monkeypatch.setattr(engine.collector, "observe", record)
+    engine.run()
+    warmup = cfg.sim.warmup
+    assert calls == list(range(warmup, cfg.sim.horizon))
+    assert [t for t, _, _ in seen] == list(range(warmup))
+    for t, readings, serving in seen:
+        clean = network_view(engine.channels.slot(t), serving)
+        assert np.array_equal(readings, clean, equal_nan=True), t
+
+
+def test_online_calibration_uses_the_serving_column_of_the_warm_up():
+    """The serving sigma is the std of exactly ``warmup * n_ue`` serving samples."""
+    cfg = _short_config()
+    engine = Engine(cfg, "obs_dhr_phys", 0)
+    result = engine.run()
+    calibration = engine.calibration
+    samples = engine.collector.samples("serving_reciprocity")
+    assert calibration.samples["serving_reciprocity"] == cfg.sim.warmup * cfg.world.n_ue
+    assert samples.size == cfg.sim.warmup * cfg.world.n_ue
+    assert calibration.serving_reciprocity == float(np.std(samples))
+    assert result.sigma_serving_recip_hat == calibration.serving_reciprocity
+    assert result.sigma_c1_hat == engine.diagnostic.sigma_c1
+
+
+def test_the_checks_are_idle_during_the_warm_up(monkeypatch):
+    """No check fires and nothing is excluded before the thresholds exist."""
+    cfg = _short_config()
+    for arm in ("obs_dhr_phys", "obs_dhr_phys_dither", "cheap_phys"):
+        engine = Engine(cfg, arm, 0)
+        decide = engine.adjudicator.decide
+        verdicts: list[tuple[int, object]] = []
+
+        def spy(view, decide=decide, verdicts=verdicts):
+            verdict = decide(view)
+            verdicts.append((view.t, verdict))
+            return verdict
+
+        monkeypatch.setattr(engine.adjudicator, "decide", spy)
+        engine.run()
+        early = [v for t, v in verdicts if t < cfg.sim.warmup]
+        assert len(early) == cfg.sim.warmup
+        for verdict in early:
+            assert not verdict.fired.any(), arm
+            assert not verdict.excluded.any(), arm
+            assert not verdict.fallback.any(), arm
+        assert any(v.fired.any() for t, v in verdicts if t >= cfg.sim.warmup), arm
+
+
+def test_recorded_thresholds_are_z_times_the_online_sigmas():
+    """``runs.csv`` records the thresholds the running checks actually used."""
+    cfg = _short_config()
+    engine = Engine(cfg, "obs_dhr_phys", 0)
+    result = engine.run()
+    for name in ("serving_reciprocity", "neighbour_reciprocity", "map", "rate"):
+        expected = cfg.checks.z * engine.calibration.sigma(name)
+        assert getattr(result, f"thr_{name}") == pytest.approx(expected, rel=1e-12)
+        assert engine.adjudicator.checks.thresholds.nominal(name) == pytest.approx(
+            expected, rel=1e-12
+        )
+    assert engine.adjudicator.checks.thresholds is engine.thresholds
 
 
 def test_one_run_is_well_under_twenty_seconds(cfg):

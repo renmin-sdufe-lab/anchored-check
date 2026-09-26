@@ -1,6 +1,6 @@
 # WES majority-reach run b2: analysis summary
 
-Runs: 40 runs; mean 0.53 s, max 0.67 s per run (DESIGN 8 budget 20 s); 21 s CPU in total
+Runs: 40 runs; mean 1.17 s, max 1.42 s per run (DESIGN 8 budget 20 s); 47 s CPU in total
 
 Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 'trap', 'check_set': 'default', 'z': 3.0, 'ramp_slots': 1, 'persistence_slots': 3}
 
@@ -47,7 +47,7 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 
 | arm | σ_map | ρ = 0 | Δ = 0 null |
 |---|---|---|---|
-| 1 single (C1) | 2 | 0.0414 ± 0.0037 | n/a |
+| 1 single (C1) | 2 | 0.0415 ± 0.0037 | n/a |
 | 3 obs DHR (C1, N, C4) | 2 | n/a | n/a |
 | 4 obs DHR + physics | 2 | n/a | n/a |
 | 5c cheap physics (C1, C4) | 2 | n/a | n/a |
@@ -63,13 +63,13 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 
 | arm | ρ | attack-attributable success / targeted slot | attack-attributable success / opportunity | attack-attributable success / instant opportunity |
 |---|---|---|---|---|
-| 1 single (C1) | 0 | 0.0414 ± 0.0037 | 0.5336 ± 0.0177 | 0.1309 ± 0.0025 |
+| 1 single (C1) | 0 | 0.0415 ± 0.0037 | 0.5346 ± 0.0174 | 0.1310 ± 0.0025 |
 | 2' model DHR (3 families on C1) | 0 | n/a | n/a | n/a |
 | 3 obs DHR (C1, N, C4) | 0 | n/a | n/a | n/a |
 | 4 obs DHR + physics | 0 | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | 0 | n/a | n/a | n/a |
 | 5c cheap physics (C1, C4) | 0 | n/a | n/a | n/a |
-| 2p param DHR (3 A3 variants on C1) | 0 | 0.0413 ± 0.0036 | 0.5295 ± 0.0177 | 0.1306 ± 0.0025 |
+| 2p param DHR (3 A3 variants on C1) | 0 | 0.0413 ± 0.0036 | 0.5304 ± 0.0173 | 0.1306 ± 0.0025 |
 
 
 ### Harm and quality of service: Δ = 0 (cost of the defence) and Δ = 10, ρ = 1 (its value); σ_map = 2
@@ -128,13 +128,13 @@ Gate setting: {'p': 0.2, 'delta': 10.0, 'rho': 1.0, 'sigma_map': 2.0, 'mode': 't
 
 | arm | attack-attributable success / targeted slot (trap) | Δ = 0 null (trap) | wrong HO / handover (trap) |
 |---|---|---|---|
-| 1 single (C1) | 0.0414 ± 0.0037 | 0.0006 ± 0.0002 | 0.5407 ± 0.0139 |
+| 1 single (C1) | 0.0415 ± 0.0037 | 0.0006 ± 0.0002 | 0.5409 ± 0.0141 |
 | 2' model DHR (3 families on C1) | n/a | n/a | n/a |
 | 3 obs DHR (C1, N, C4) | n/a | n/a | n/a |
 | 4 obs DHR + physics | n/a | n/a | n/a |
 | 4d obs DHR + dithered physics | n/a | n/a | n/a |
 | 5c cheap physics (C1, C4) | n/a | n/a | n/a |
-| 2p param DHR (3 A3 variants on C1) | 0.0413 ± 0.0036 | 0.0006 ± 0.0002 | 0.5402 ± 0.0146 |
+| 2p param DHR (3 A3 variants on C1) | 0.0413 ± 0.0036 | 0.0006 ± 0.0002 | 0.5403 ± 0.0147 |
 
 
 
