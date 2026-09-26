@@ -1,4 +1,4 @@
-# Wireless Endogenous Security for 6G Control Agents: Observation Diversity and What Anchors the Check
+# Wireless Endogenous Security for 6G Control Agents: Observation Diversity and Anchored Consistency Checks
 
 Simulation code, pre-registered protocol and frozen run tables behind the
 article of that title.
